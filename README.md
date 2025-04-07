@@ -9,5 +9,11 @@ mcpsandbox is a MCP Client, works on VPS, sandbox MCP environment for all AI dev
 git clone https://github.com/yammerjp/mcpsandbox.git
 cd mcpsandbox
 npm install
+
+# start mcp servers
+# ex: playwright
+npx @playwright/mcp@latest --port 8931 --headless &
+
 npm run dev
 ```
+
