@@ -1,15 +1,18 @@
 "use client";
  
 import { useChat } from "@ai-sdk/react";
- 
+import { TextUIPart, ReasoningUIPart, ToolInvocationUIPart, SourceUIPart, FileUIPart, StepStartUIPart } from "@ai-sdk/react/dist/types/ui";
+
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit, reload } =
-    useChat();
+  const { messages, input, handleInputChange, handleSubmit, reload, isLoading } =
+    useChat({
+      maxSteps: 10,
+    });
  
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-50 min-h-screen">
       <div className="space-y-4 mb-6">
-        {messages.map((message) => (
+        {messages.map((message, idx) => (
           <div
             key={message.id}
             className={`p-4 rounded-lg ${
@@ -21,7 +24,24 @@ export default function Chat() {
             <div className="font-semibold mb-1 text-sm text-gray-600">
               {message.role === "user" ? "You" : "Claude"}
             </div>
-            <div className="text-gray-800 whitespace-pre-wrap">{message.content}</div>
+            <div className="text-gray-800 whitespace-pre-wrap">{message.parts.map((part: TextUIPart | ReasoningUIPart | ToolInvocationUIPart | SourceUIPart | FileUIPart | StepStartUIPart) => {
+              if (part.type === 'text') {
+                return part.text
+              } else if (part.type === 'step-start') {
+                // skip
+                return undefined
+              } else if (part.type === 'reasoning') {
+                return "reasoning...."
+              } else if (part.type === 'tool-invocation') {
+                return <p><div className="text-gray-500 whitespace-pre-wrap">ツールを呼び出します...</div>
+                {part.toolInvocation.state}
+                {JSON.stringify(part.toolInvocation)}
+                </p>
+              } else {
+                return JSON.stringify(part)
+              }
+            })}</div>
+            <div className="text-gray-800 whitespace-pre-wrap">{message.role !== 'user' && idx === messages.length - 1 && isLoading && '...'}</div>
             {message.role === "assistant" && (
               <button
                 className="mt-2 text-sm text-blue-600 hover:underline"
@@ -44,8 +64,9 @@ export default function Chat() {
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={isLoading}
         >
-          Send
+          {isLoading ? "送信中..." : "送信"}
         </button>
       </form>
     </div>

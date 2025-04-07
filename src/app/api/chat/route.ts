@@ -1,8 +1,6 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
-
 import { experimental_createMCPClient as createMCPClient } from "ai";
- 
 
 // 30 秒間のストリーミングを許可する
 export const maxDuration = 30;
