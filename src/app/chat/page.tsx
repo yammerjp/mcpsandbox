@@ -67,38 +67,88 @@ export default function Chat() {
             )}
 
       </div>
-      <div className="sticky bottom-0 pt-4">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={handleInputChange}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
-          {isLoading ? (
-            <button
-              type="button"
-              onClick={() => stop()}
-              className="p-2 bg-gray-700 text-white rounded-full hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center justify-center w-10 h-10"
-              title="停止"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <rect x="6" y="6" width="12" height="12" strokeWidth={2} />
-              </svg>
-            </button>
-          ) : (
-            <button
-              type="submit"
-              className="p-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center justify-center w-10 h-10"
-              disabled={isLoading}
-              title="送信"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-              </svg>
-            </button>
-          )}
+      {/* Add padding at the bottom to prevent content from being hidden behind the fixed input */}
+      <div className="pb-16"></div>
+      <div className="fixed bottom-0 left-0 right-0 p-4">
+        <form onSubmit={(e) => {
+          handleSubmit(e);
+          // Reset textarea height after submission
+          const textarea = e.currentTarget.querySelector('textarea');
+          if (textarea) {
+            textarea.style.height = 'auto';
+          }
+        }} className="max-w-4xl mx-auto">
+          <div className="relative">
+            <textarea
+              value={input}
+              onChange={handleInputChange}
+              placeholder="質問してみましょう"
+              className="w-full px-6 py-5 pr-20 border border-gray-300 rounded-4xl focus:outline-none bg-white focus:border-gray-500 dark:bg-gray-900 shadow-sm resize-none min-h-[50px] max-h-[70vh] overflow-y-auto"
+              style={{ height: 'auto' }}
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) {
+                  return;
+                }
+                
+                if (e.key === 'Enter') {
+                  if (!e.shiftKey) {
+                    e.preventDefault();
+                    if (!isLoading) {
+                      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+                      // Reset textarea height after submission via Enter key
+                      const textarea = e.target as HTMLTextAreaElement;
+                      textarea.style.height = 'auto';
+                    }
+                  }
+                  // Shift + Enterの場合はデフォルトの動作（改行挿入）を許可
+                }
+              }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                // Reset height to auto to get the correct scrollHeight
+                target.style.height = 'auto';
+                
+                if (target.scrollHeight > window.innerHeight * 0.7) {
+                  // If content exceeds max height, set to max height and enable scrolling
+                  target.style.height = `${window.innerHeight * 0.7}px`;
+                  target.style.overflowY = 'auto';
+                } else {
+                  // Otherwise, set height to match content and disable scrolling
+                  target.style.height = `${target.scrollHeight}px`;
+                  target.style.overflowY = 'hidden';
+                }
+              }}
+            />
+            {/* Position the button to align with the bottom of the text area */}
+            <div className="absolute right-1 bottom-0 h-auto flex items-center pb-4">
+              <div className="relative right-[10px]">
+                {isLoading ? (
+                  <button
+                    type="button"
+                    onClick={() => stop()}
+                    className="p-2 bg-gray-700 text-white rounded-full hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center justify-center w-10 h-10"
+                    title="停止"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <rect x="6" y="6" width="12" height="12" strokeWidth={2} />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="p-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center justify-center w-10 h-10"
+                    disabled={isLoading}
+                    title="送信"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </form>
       </div>
     </div>
