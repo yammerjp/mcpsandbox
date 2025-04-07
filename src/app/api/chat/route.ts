@@ -1,6 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
-import { experimental_createMCPClient as createMCPClient } from "ai";
+import { experimental_createMCPClient as createSseMCPClient } from "ai";
+import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
 
 // 30 秒間のストリーミングを許可する
 export const maxDuration = 30;
@@ -9,14 +10,28 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const mcpClient = await createMCPClient({
+  const praywrightMCPClient = await createSseMCPClient({
     transport: {
       type: "sse",
       url: "http://localhost:8931/sse"
     },
   });
+
+  const weatherMCPTransport = new Experimental_StdioMCPTransport({
+    command: 'npx',
+    args: ['-y', '@h1deya/mcp-server-weather'],
+  })
+
+  const weatherMCPClient = await createSseMCPClient({
+    transport: weatherMCPTransport,
+  });
+
   // Schema Discovery を使用して MCP サーバーからツール定義を取得
-  const tools = await mcpClient.tools();
+  const praywrightTools = await praywrightMCPClient.tools();
+  const weatherTools = await weatherMCPClient.tools();
+
+  const tools = {...praywrightTools, ...weatherTools};
+
  
  
   const result = streamText({
@@ -25,7 +40,8 @@ export async function POST(req: Request) {
     tools,
     onFinish: () => {
       // ストリーミング応答が完了したら、必ず MCP クライアントの接続を閉じる
-      mcpClient.close();
+      praywrightMCPClient.close();
+      weatherMCPClient.close();
     }
   });
  
