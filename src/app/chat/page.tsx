@@ -1,7 +1,7 @@
 "use client";
  
 import { useChat } from "@ai-sdk/react";
-import { TextUIPart, ReasoningUIPart, ToolInvocationUIPart, SourceUIPart, FileUIPart, StepStartUIPart } from "@ai-sdk/react/dist/types/ui";
+import { TextUIPart, ReasoningUIPart, ToolInvocationUIPart, SourceUIPart, FileUIPart, StepStartUIPart } from "@ai-sdk/ui-utils";
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, reload, isLoading } =
